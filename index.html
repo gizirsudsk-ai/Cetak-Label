@@ -8,42 +8,50 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3, .font-brand { font-family: 'Nunito', sans-serif; }
-        
-        /* UKURAN FISIK KOTAK LABEL: 80mm x 50mm */
-        .label-print-block {
-            width: 80mm;
-            height: 50mm;
-            box-sizing: border-box;
-            padding: 3mm 4mm;
-            background: #ffffff;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            page-break-after: always;
-            break-after: page;
-        }
+    body { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, .font-brand { font-family: 'Nunito', sans-serif; }
+    
+    /* PENGUNCIAN MUTLAK UKURAN FISIK KOTAK LABEL: 80mm x 50mm */
+    .label-print-block {
+        width: 80mm !important;
+        height: 48mm !important; /* Diberi toleransi 48mm agar tidak melewati batas bawah stiker */
+        max-height: 48mm !important;
+        box-sizing: border-box !important;
+        padding: 2mm 3mm !important;
+        background: #ffffff !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
 
-        /* PENGATURAN CETAK / PRINT */
-        @media print {
-            body * { visibility: hidden; }
-            #area-cetak, #area-cetak * { visibility: visible; }
-            #area-cetak {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 80mm;
-                margin: 0;
-                padding: 0;
-            }
-            @page {
-                size: 80mm 50mm;
-                margin: 0;
-            }
+    /* PENGUNCIAN MUTLAK ATURAN PRINTER (MENGABAIKAN MARGIN BROWSER) */
+    @media print {
+        body * { visibility: hidden !important; }
+        #area-cetak, #area-cetak * { visibility: visible !important; }
+        #area-cetak {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 80mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
-    </style>
+        .label-print-block {
+            border: none !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+        }
+        @page {
+            size: 80mm 50mm !important;
+            margin: 0mm !important;
+        }
+    }
+</style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col pb-8">
 
