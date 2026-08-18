@@ -3,57 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Plisir Gizi 80x50 PDF - RSUD Suryah Khairuddin</title>
-    <script src="https://cdn.tailwindcss.com/"></script>
+    <title>Aplikasi Plisir Gizi 80x50 - RSUD Suryah Khairuddin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- PUSTAKA UNTUK EKSPOR PDF LURING PRESISI -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;850&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
         h1, h2, h3, .font-brand { font-family: 'Nunito', sans-serif; }
         
-        /* GAYA FISIK KOTAK LABEL: DIKUNCI MATI PADA UKURAN 80mm x 50mm */
+        /* UKURAN FISIK KOTAK LABEL: 80mm x 50mm */
         .label-print-block {
             width: 80mm;
             height: 50mm;
             box-sizing: border-box;
-            padding: 3mm 4.5mm;
+            padding: 3mm 4mm;
             background: #ffffff;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            page-break-after: always;
+            break-after: page;
         }
 
-        /* ATURAN HALAMAN SAAT DICETAK KE PRINTER THERMAL */
+        /* PENGATURAN CETAK / PRINT */
         @media print {
             body * { visibility: hidden; }
-            #area-cetak-massal-thermal, #area-cetak-massal-thermal * { visibility: visible; }
-            #area-cetak-massal-thermal {
+            #area-cetak, #area-cetak * { visibility: visible; }
+            #area-cetak {
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 80mm;
                 margin: 0;
                 padding: 0;
-                border: none;
-                box-shadow: none;
-            }
-            .label-print-block {
-                border: none !important;
-                box-shadow: none !important;
-                page-break-after: always;
-                break-after: page;
-            }
-            .label-print-block:last-child {
-                page-break-after: avoid;
-                break-after: avoid;
             }
             @page {
                 size: 80mm 50mm;
-                margin: 0mm;
+                margin: 0;
             }
         }
     </style>
@@ -62,628 +49,328 @@
 
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3"></div>
 
-    <!-- HEADER MENU -->
+    <!-- HEADER -->
     <header class="bg-teal-800 text-white px-6 py-4 shadow-md">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="p-2 bg-teal-700 rounded-xl">
                     <i data-lucide="printer" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                    <h1 class="text-base font-black tracking-tight leading-none uppercase">Sistem Plisir Mandiri (80x50)</h1>
-                    <span class="text-[10px] text-teal-300 font-bold uppercase tracking-wider">RSUD SURYAH KHAIRUDDIN</span>
+                    <h1 class="text-base font-black tracking-tight uppercase">Plisir Gizi 80x50 mm</h1>
+                    <span class="text-[10px] text-teal-300 font-bold uppercase">RSUD SURYAH KHAIRUDDIN</span>
                 </div>
             </div>
-            <span class="text-xs font-bold bg-teal-900/50 px-3 py-1.5 rounded-full border border-teal-700/60">Standalone Printer</span>
+            <span class="text-xs font-bold bg-teal-900/50 px-3 py-1.5 rounded-full border border-teal-700">Offline Ready</span>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 w-full flex-1">
+    <main class="max-w-5xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6 w-full flex-1">
         
-        <!-- KOLOM KIRI: FORM REGISTRASI / EDIT & MANIFES PASIEN AKTIF -->
+        <!-- FORM & TABEL (KIRI) -->
         <div class="lg:col-span-7 space-y-6">
             
-            <!-- FORM INPUT PASIEN -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <h3 class="font-extrabold text-slate-800 text-sm uppercase tracking-wider pb-2 border-b flex items-center gap-1.5">
-                    <i data-lucide="user-plus" class="w-4.5 h-4.5 text-teal-600"></i> <span id="form-title">Tambah Pasien Baru</span>
+            <!-- FORM INPUT -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="font-extrabold text-slate-800 text-xs uppercase tracking-wider pb-2 border-b flex items-center gap-1.5">
+                    <i data-lucide="user-plus" class="w-4 h-4 text-teal-600"></i> <span id="form-title">Tambah Pasien Baru</span>
                 </h3>
                 
-                <form id="form-pasien" onsubmit="handleSimpanPasien(event)" class="space-y-4 text-xs font-semibold">
-                    <input type="hidden" id="edit-mode" value="false">
-                    <input type="hidden" id="edit-old-rm" value="">
+                <form id="form-pasien" onsubmit="simpanPasien(event)" class="space-y-3 text-xs font-semibold">
+                    <input type="hidden" id="edit-index" value="-1">
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-slate-500 uppercase tracking-wider mb-1.5">No. Rekam Medis (RM) *</label>
-                            <input type="text" id="inp-rm" required class="w-full px-3.5 py-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="RM-0000">
+                            <label class="block text-slate-500 mb-1">No. Rekam Medis (RM) *</label>
+                            <input type="text" id="inp-rm" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="RM-0000">
                         </div>
                         <div>
-                            <label class="block text-slate-500 uppercase tracking-wider mb-1.5">Nama Lengkap Pasien *</label>
-                            <input type="text" id="inp-nama" required class="w-full px-3.5 py-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="Ahmad Subarjo">
+                            <label class="block text-slate-500 mb-1">Nama Lengkap Pasien *</label>
+                            <input type="text" id="inp-nama" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="Nama Pasien">
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div class="md:col-span-2">
-                            <label class="block text-slate-500 uppercase tracking-wider mb-1.5">Ruang Rawat (Bangsal/Kelas/Bed) *</label>
-                            <input type="text" id="inp-ruang" required class="w-full px-3.5 py-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="Penyakit Dalam (VIP B / Bed 1)">
+                            <label class="block text-slate-500 mb-1">Ruang Rawat / Bangsal *</label>
+                            <input type="text" id="inp-ruang" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="Penyakit Dalam / VIP">
                         </div>
                         <div>
-                            <label class="block text-slate-500 uppercase tracking-wider mb-1.5">Tanggal Lahir Pasien *</label>
-                            <input type="text" id="inp-tgl-lahir" required class="w-full px-3.5 py-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="Contoh: 12-04-1975 atau 51 Th">
+                            <label class="block text-slate-500 mb-1">Tgl Lahir / Umur *</label>
+                            <input type="text" id="inp-tgl" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="12-04-1975 atau 50 Th">
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-slate-500 uppercase tracking-wider mb-1.5">Bentuk Makanan *</label>
-                            <select id="inp-bentuk" required class="w-full px-3.5 py-2.5 border rounded-xl outline-none bg-white">
+                            <label class="block text-slate-500 mb-1">Bentuk Makanan *</label>
+                            <select id="inp-bentuk" required class="w-full px-3 py-2 border rounded-xl outline-none bg-white">
                                 <option value="Makanan Biasa">Makanan Biasa (Nasi)</option>
                                 <option value="Makanan Lunak" selected>Makanan Lunak (Bubur/Tim)</option>
                                 <option value="Makanan Saring">Makanan Saring</option>
                                 <option value="Makanan Cair">Makanan Cair (Enteral)</option>
                             </select>
                         </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-slate-500 uppercase tracking-wider mb-1.5">Diit (Jenis Diet) *</label>
-                            <input type="text" id="inp-diet" required class="w-full px-3.5 py-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="Contoh: Diet Rendah Garam, Diet DM">
+                        <div>
+                            <label class="block text-slate-500 mb-1">Jenis Diit *</label>
+                            <input type="text" id="inp-diet" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="Diet Rendah Garam, DM, dll">
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t">
-                        <div>
-                            <label class="block text-slate-500 uppercase tracking-wider mb-1.5">Ahli Gizi / Penanggung Jawab *</label>
-                            <input type="text" id="inp-petugas" required class="w-full px-3.5 py-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="Alfebriati, S.Gz">
-                        </div>
-                        <div class="flex items-end gap-2">
-                            <button type="button" onclick="bersihkanForm()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition text-center">Batal</button>
-                            <button type="submit" id="btn-submit-pasien" class="flex-1 bg-teal-800 hover:bg-teal-700 text-white font-bold py-3 rounded-xl shadow transition flex items-center justify-center gap-1.5">
-                                <i data-lucide="user-check" class="w-4 h-4"></i>
-                                <span>Simpan Pasien</span>
-                            </button>
-                        </div>
+                    <div class="flex gap-2 pt-2 border-t">
+                        <button type="button" onclick="resetForm()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl">Batal</button>
+                        <button type="submit" id="btn-submit" class="flex-1 bg-teal-800 hover:bg-teal-700 text-white font-bold py-2 rounded-xl shadow flex items-center justify-center gap-1">
+                            <i data-lucide="check" class="w-4 h-4"></i> Simpan Pasien
+                        </button>
                     </div>
                 </form>
             </div>
 
-            <!-- TABEL DAFTAR MANIFES PASIEN AKTIF -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b">
-                    <h3 class="font-extrabold text-slate-800 text-sm uppercase tracking-wider flex items-center gap-1.5">
-                        <i data-lucide="users" class="w-4.5 h-4.5 text-teal-600"></i> Daftar Pasien Rawat Inap Aktif
+            <!-- TABEL MANIFES -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <div class="flex justify-between items-center pb-2 border-b">
+                    <h3 class="font-extrabold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                        <i data-lucide="users" class="w-4 h-4 text-teal-600"></i> Daftar Pasien Aktif
                     </h3>
-                    <div class="flex gap-2">
-                        <button onclick="pilihSemuaPasien(true)" class="text-xs font-bold text-teal-700 hover:text-teal-900 transition">Pilih Semua</button>
-                        <span class="text-slate-300">|</span>
-                        <button onclick="pilihSemuaPasien(false)" class="text-xs font-bold text-slate-500 hover:text-slate-700 transition">Batal Semua</button>
+                    <div class="flex gap-2 text-xs">
+                        <button onclick="pilihSemua(true)" class="font-bold text-teal-700">Pilih Semua</button>
+                        <span>|</span>
+                        <button onclick="pilihSemua(false)" class="font-bold text-slate-500">Batal</button>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto max-h-[380px] overflow-y-auto">
+                <div class="overflow-x-auto max-h-[300px] overflow-y-auto">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead>
-                            <tr class="bg-slate-50 text-slate-500 font-bold border-b sticky top-0 z-10">
-                                <th class="py-2.5 px-3 text-center" style="width: 8%;">Cetak</th>
-                                <th class="py-2.5 px-3">No. RM</th>
-                                <th class="py-2.5 px-3">Nama Pasien</th>
-                                <th class="py-2.5 px-3">Ruang Rawat</th>
-                                <th class="py-2.5 px-3">Bentuk & Diit</th>
-                                <th class="py-2.5 px-3 text-center">Tindakan</th>
+                            <tr class="bg-slate-50 text-slate-500 font-bold border-b sticky top-0">
+                                <th class="p-2 text-center w-10">Cetak</th>
+                                <th class="p-2">RM & Nama</th>
+                                <th class="p-2">Ruang</th>
+                                <th class="p-2">Diit</th>
+                                <th class="p-2 text-center w-16">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="manifes-pasien-body" class="divide-y divide-slate-100 font-medium text-slate-700">
-                        </tbody>
+                        <tbody id="tabel-pasien" class="divide-y divide-slate-100 font-medium"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- KOLOM KANAN: LIVE PREVIEW & TOMBOL CETAK (LEBAR 5 KOLOM) -->
+        <!-- PRATINJAU & CETAK (KANAN) -->
         <div class="lg:col-span-5 space-y-6">
-            
-            <!-- LIVE PREVIEW & TOMBOL CETAK -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center space-y-4">
-                <div class="flex justify-between items-center border-b pb-3 w-full">
-                    <h3 class="font-extrabold text-slate-700 text-sm uppercase tracking-wider flex items-center gap-1.5">
-                        <i data-lucide="printer" class="w-4.5 h-4.5 text-slate-500"></i> Pratinjau Kertas 80x50 mm
-                    </h3>
-                    <span class="text-xs font-bold bg-teal-50 text-teal-800 px-3 py-1 rounded-full border border-teal-200" id="lbl-total-cetak">0 Label</span>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center space-y-4">
+                <div class="flex justify-between items-center border-b pb-2 w-full text-xs">
+                    <h3 class="font-extrabold text-slate-700 uppercase tracking-wider">Pratinjau Label (80x50 mm)</h3>
+                    <span class="font-bold bg-teal-50 text-teal-800 px-2.5 py-1 rounded-full border border-teal-200" id="lbl-total">0 Terpilih</span>
                 </div>
 
-                <!-- DUA TOMBOL EKSEKUSI CETAK (PRINTER VS FILE PDF) -->
-                <div class="grid grid-cols-2 gap-2 w-full">
-                    <button onclick="cetakMassalSekaligus()" class="bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-1.5 text-xs">
-                        <i data-lucide="printer" class="w-4 h-4 text-teal-400"></i>
-                        <span>Cetak Fisik</span>
-                    </button>
-                    <button onclick="unduhPDFKolektif()" class="bg-teal-700 hover:bg-teal-650 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-1.5 text-xs">
-                        <i data-lucide="file-text" class="w-4 h-4 text-white"></i>
-                        <span>Unduh PDF</span>
-                    </button>
-                </div>
+                <!-- TOMBOL EKSEKUSI CETAK UTAMA -->
+                <button onclick="window.print()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-xs">
+                    <i data-lucide="printer" class="w-4 h-4 text-teal-400"></i>
+                    <span>CETAK LABEL SEKARANG (Printer / Bluetooth)</span>
+                </button>
 
-                <!-- PREVIEW CONTAINER ASPEK RASIO FISIK 80x50mm -->
-                <div class="border border-slate-200 rounded-xl bg-slate-200 p-4 max-h-[480px] overflow-y-auto space-y-4 w-full flex flex-col items-center">
-                    <div id="area-cetak-massal-thermal" class="w-[80mm] flex flex-col gap-4">
-                        <!-- Label akan di-render di sini -->
+                <!-- KONTAINER PREVIEW -->
+                <div class="border border-slate-300 rounded-xl bg-slate-200 p-4 max-h-[420px] overflow-y-auto w-full flex flex-col items-center">
+                    <div id="area-cetak" class="w-[80mm] flex flex-col gap-4">
+                        <!-- Label dirender otomatis di sini -->
                     </div>
                 </div>
             </div>
 
-            <!-- PANEL INTERAKTIF: CADANGAN DATA (OFFLINE ONLY) -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <h3 class="font-extrabold text-slate-800 text-sm uppercase tracking-wider pb-2 border-b flex items-center gap-1.5">
-                    <i data-lucide="database" class="w-4.5 h-4.5 text-teal-600"></i> Cadangan & Pindah Perangkat
-                </h3>
-                <p class="text-[10px] text-slate-400 leading-relaxed">Gunakan tombol di bawah ini untuk mengekspor cadangan data, lalu impor di browser HP/komputer petugas lain untuk sinkronisasi instan.</p>
-                <div class="grid grid-cols-2 gap-2 text-center text-xs">
-                    <div>
-                        <button onclick="eksporDatabaseLokal()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border transition flex items-center justify-center gap-1">
-                            <i data-lucide="download" class="w-3.5 h-3.5"></i> Ekspor (.json)
-                        </button>
-                    </div>
-                    <div>
-                        <label class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border transition flex items-center justify-center gap-1 cursor-pointer">
-                            <i data-lucide="upload" class="w-3.5 h-3.5"></i> Impor (.json)
-                            <input type="file" id="inp-import-file" accept=".json" class="hidden" onchange="imporDatabaseLokal(event)">
-                        </label>
-                    </div>
-                </div>
+            <!-- CADANGAN DATA (JSON) -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center text-xs">
+                <button onclick="eksporData()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 font-bold rounded-xl border flex items-center gap-1">
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i> Ekspor Data
+                </button>
+                <label class="px-3 py-2 bg-slate-100 hover:bg-slate-200 font-bold rounded-xl border flex items-center gap-1 cursor-pointer">
+                    <i data-lucide="upload" class="w-3.5 h-3.5"></i> Impor Data
+                    <input type="file" accept=".json" class="hidden" onchange="imporData(event)">
+                </label>
             </div>
-
         </div>
     </main>
 
     <script>
-        let dbPasien = [];
-        const STORAGE_KEY = "plisir_pasien_db_sederhana"; // SATU KUNCI PENYIMPANAN KONSISTEN (MENCEGAH BUG IMPOR)
+        let dbPasien = JSON.parse(localStorage.getItem("db_plisir_gizi")) || [];
 
         window.onload = function() {
-            const lastPetugas = localStorage.getItem("last_petugas");
-            if (lastPetugas) {
-                document.getElementById("inp-petugas").value = lastPetugas;
-            }
-            
-            // Muat database pasien dari penyimpanan lokal
-            dbPasien = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-            renderManifesTable();
-            renderPrintPreview();
+            renderTabel();
+            renderPreview();
             if (typeof lucide !== 'undefined') lucide.createIcons();
         };
 
-        function showToast(message, type = "success") {
+        function showToast(msg) {
             const container = document.getElementById("toast-container");
-            if (!container) return;
             const toast = document.createElement("div");
-            toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border text-xs font-bold transition-all duration-300 transform translate-y-5 opacity-0 ${
-                type === "success" ? "bg-emerald-500 border-emerald-600 text-white" :
-                type === "error" ? "bg-rose-500 border-rose-600 text-white" : "bg-slate-800 border-slate-900 text-white"
-            }`;
-            toast.innerHTML = `<span>${message}</span>`;
+            toast.className = "bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-bold transition-all";
+            toast.innerText = msg;
             container.appendChild(toast);
-            setTimeout(() => { toast.classList.remove("translate-y-5", "opacity-0"); }, 50);
-            setTimeout(() => {
-                toast.classList.add("translate-y-[-5px]", "opacity-0");
-                setTimeout(() => { toast.remove(); }, 300);
-            }, 3000);
+            setTimeout(() => toast.remove(), 2500);
         }
 
-       // GANTI KEDUA FUNGSI INI DI DALAM KODE JAVASCRIPT ANDA:
-function formatTanggalIndo(dateStr) {
-    if (!dateStr || dateStr === "-") return "-";
-    try {
-        const clean = dateStr.toString().trim();
-        // Deteksi jika pengguna menginput umur manual secara langsung
-        if (clean.toLowerCase().includes("th") || clean.toLowerCase().includes("tahun") || (!clean.includes("-") && !clean.includes("/"))) {
-            return clean; // Kembalikan teks aslinya tanpa diproses matematika
-        }
-        const cleanDate = clean.split('T')[0].split(' ')[0].trim();
-        const separator = cleanDate.includes('/') ? '/' : '-';
-        const parts = cleanDate.split(separator);
-        if (parts.length === 3) {
-            let day = parts[2];
-            let monthStr = parts[1];
-            let year = parts[0];
-            if (parts[2].length === 4) { // Penyelaras format DD-MM-YYYY
-                day = parts[0];
-                monthStr = parts[1];
-                year = parts[2];
-            }
-            const monthIdx = parseInt(monthStr, 10) - 1;
-            const namaBulan = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
-            return `${parseInt(day, 10)} ${namaBulan[monthIdx] || "Bulan"} ${year}`;
-        }
-    } catch (e) {
-        console.warn("Format tanggal bermasalah:", dateStr, e);
-    }
-    return dateStr;
-}
-
-function hitungUmurLokal(tglLahirStr) {
-    if (!tglLahirStr || tglLahirStr === "-") return "";
-    try {
-        const clean = tglLahirStr.toString().trim();
-        // Jika sudah diinput umur secara manual, kosongkan kembalian agar tidak dobel tulisan
-        if (clean.toLowerCase().includes("th") || clean.toLowerCase().includes("tahun") || (!clean.includes("-") && !clean.includes("/"))) {
-            return ""; 
-        }
-        const birth = new Date(clean);
-        if (isNaN(birth.getTime())) return "";
-        const today = new Date();
-        let age = today.getFullYear() - birth.getFullYear();
-        let m = today.getMonth() - birth.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-        return age + " Th";
-    } catch (e) {
-        return "";
-    }
-}
-
-        // ==================== 1. EKSPOR IMPOR FILE LURING (.JSON) ====================
-        function eksporDatabaseLokal() {
-            if (dbPasien.length === 0) {
-                showToast("Tidak ada data pasien aktif untuk diekspor!", "error");
-                return;
-            }
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dbPasien));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `Backup_Plisir_Gizi_Sederhana_${getLocalDateString()}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-            showToast("Berkas cadangan (.json) berhasil diunduh!", "success");
-        }
-
-       // GANTI FUNGSI imporDatabaseLokal() LAMA ANDA DENGAN INI:
-function imporDatabaseLokal(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const parsed = JSON.parse(e.target.result);
-            if (Array.isArray(parsed)) {
-                // SENSOR PENYELARAS KUNCI CADANGAN DATA (SANGAT AMAN)
-                dbPasien = parsed.map(function(p) {
-                    if (!p) return null;
-                    
-                    // Fungsi pembantu pembaca kunci fleksibel (case-insensitive)
-                    const getVal = (keys) => {
-                        for (let k of keys) {
-                            if (p[k] !== undefined && p[k] !== null) return p[k];
-                            let lowerK = k.toLowerCase().replace(/[^a-z0-9]/g, "");
-                            for (let realKey in p) {
-                                if (realKey.toLowerCase().replace(/[^a-z0-9]/g, "") === lowerK) {
-                                    return p[realKey];
-                                }
-                            }
-                        }
-                        return "";
-                    };
-
-                    const rm = getVal(["rm", "no_rm", "RM", "no_rekam_medis"]).toString().toUpperCase().trim();
-                    const nama = getVal(["nama", "nama_pasien", "Nama", "nama_lengkap"]).toString().toUpperCase().trim();
-                    
-                    if (!rm || !nama) return null; // Lewati jika baris data tidak valid
-
-                    return {
-                        rm: rm,
-                        nama: nama,
-                        ruang: getVal(["ruang", "bangsal", "ruang_rawat", "ruangan"]) || "Penyakit Dalam",
-                        kelas: getVal(["kelas", "kelas_perawatan"]) || "Kelas 3",
-                        bed: getVal(["bed", "kamar", "no_bed", "no_kamar"]) || "-",
-                        tgl_lahir: getVal(["tgl_lahir", "tanggal_lahir", "tglLahir"]) || "1990-01-01",
-                        bentuk: getVal(["bentuk", "bentuk_makanan"]) || "Makanan Lunak",
-                        diet: getVal(["diet", "jenis_diet", "diit"]) || "DIET SEIMBANG",
-                        kalori: getVal(["kalori", "kalori_target"]) || "0",
-                        protein: getVal(["protein", "protein_target"]) || "0",
-                        petugas: getVal(["petugas", "ahli_gizi", "pj"]) || "PJ GIZI",
-                        selected: true
-                    };
-                }).filter(p => p !== null);
-
-                saveToLocalStorage(); // Tulis secara aman menggunakan kunci tunggal yang benar
-                renderManifesTable();
-                renderPrintPreview();
-                showToast(`Impor Sukses! ${dbPasien.length} pasien berhasil dimuat.`, "success");
-            } else {
-                showToast("Format database tidak didukung!", "error");
-            }
-        } catch(err) {
-            showToast("Gagal memuat berkas cadangan!", "error");
-        }
-    };
-    reader.readAsText(file);
-}
-
-        // ==================== 2. EKSPOR PDF FISIK LURING PRESISI 80x50 mm ====================
-        function unduhPDFKolektif() {
-            const element = document.getElementById("area-cetak-massal-thermal");
-            const selectedCount = dbPasien.filter(p => p.selected).length;
-            if (selectedCount === 0) {
-                showToast("Pilih minimal satu pasien untuk dibuatkan PDF!", "error");
-                return;
-            }
-            
-            showToast("Menyusun dokumen PDF...", "info");
-            
-            // Konfigurasi konversi PDF presisi ukuran 80mm x 50mm LANDSCAPE per halaman
-            const opt = {
-                margin:       0,
-                filename:     `Label_Plisir_Gizi_RSUD_${getLocalDateString()}.pdf`,
-                image:        { type: 'jpeg', quality: 1.0 },
-                html2canvas:  { scale: 3, useCORS: true, letterRendering: true, width: 302, height: 189 }, // 302px x 189px setara 80mm x 50mm pada 96 DPI
-                jsPDF:        { unit: 'mm', format: [80, 50], orientation: 'landscape' }, // Landscape mengunci lebar 80mm dan tinggi 50mm
-                pagebreak:    { mode: ['css', 'legacy'] }
-            };
-            
-            html2pdf().set(opt).from(element).save().then(() => {
-                showToast("Berhasil mengunduh berkas PDF siap cetak!", "success");
-            }).catch(err => {
-                console.error(err);
-                showToast("Gagal menyusun dokumen PDF.", "error");
-            });
-        }
-
-        // ==================== 3. PENANGANAN FORM PASIEN & TABEL MANIFES ====================
-        function handleSimpanPasien(event) {
-            event.preventDefault();
-
-            const rm = document.getElementById("inp-rm").value.trim().toUpperCase();
-            const nama = document.getElementById("inp-nama").value.trim().toUpperCase();
-            const ruang = document.getElementById("inp-ruang").value.trim().toUpperCase();
-            const tgl_lahir = document.getElementById("inp-tgl-lahir").value;
-            const bentuk = document.getElementById("inp-bentuk").value;
-            const diet = document.getElementById("inp-diet").value.trim().toUpperCase();
-            const petugas = document.getElementById("inp-petugas").value.trim().toUpperCase();
-
-            localStorage.setItem("last_petugas", petugas);
-
-            const editMode = document.getElementById("edit-mode").value === "true";
-            const oldRM = document.getElementById("edit-old-rm").value;
-
-            const pasienObj = {
-                rm, nama, ruang, tgl_lahir, bentuk, diet, petugas, selected: true
+        function simpanPasien(e) {
+            e.preventDefault();
+            const idx = document.getElementById("edit-index").value;
+            const data = {
+                rm: document.getElementById("inp-rm").value.trim().toUpperCase(),
+                nama: document.getElementById("inp-nama").value.trim().toUpperCase(),
+                ruang: document.getElementById("inp-ruang").value.trim().toUpperCase(),
+                tgl: document.getElementById("inp-tgl").value.trim(),
+                bentuk: document.getElementById("inp-bentuk").value,
+                diet: document.getElementById("inp-diet").value.trim().toUpperCase(),
+                selected: true
             };
 
-            if (editMode) {
-                const idx = dbPasien.findIndex(p => p.rm === oldRM);
-                if (idx !== -1) {
-                    dbPasien[idx] = pasienObj;
-                    showToast(`Data pasien ${nama} diperbarui!`, "success");
-                }
+            if (idx === "-1") {
+                dbPasien.push(data);
+                showToast("Pasien berhasil ditambahkan!");
             } else {
-                if (dbPasien.some(p => p.rm === rm)) {
-                    showToast(`No. RM ${rm} sudah terdaftar di manifes!`, "error");
-                    return;
-                }
-                dbPasien.push(pasienObj);
-                showToast(`Pasien ${nama} ditambahkan ke Manifes Aktif!`, "success");
+                data.selected = dbPasien[idx].selected;
+                dbPasien[idx] = data;
+                showToast("Data pasien diperbarui!");
             }
 
-            saveToLocalStorage();
-            bersihkanForm();
-            renderManifesTable();
-            renderPrintPreview();
+            simpanDanPerbarui();
+            resetForm();
         }
 
-        function saveToLocalStorage() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(dbPasien));
+        function simpanDanPerbarui() {
+            localStorage.setItem("db_plisir_gizi", JSON.stringify(dbPasien));
+            renderTabel();
+            renderPreview();
         }
 
-        function renderManifesTable() {
-            const tbody = document.getElementById("manifes-pasien-body");
-            if (!tbody) return;
-
+        function renderTabel() {
+            const tbody = document.getElementById("tabel-pasien");
             if (dbPasien.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-bold bg-white">Belum ada pasien terdaftar di manifes harian.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-bold bg-white">Belum ada pasien terdaftar.</td></tr>`;
                 return;
             }
 
-            dbPasien.sort((a,b) => a.nama.localeCompare(b.nama));
-
-            tbody.innerHTML = dbPasien.map(p => `
-                <tr class="hover:bg-slate-50 border-b bg-white text-slate-700">
-                    <td class="py-2.5 px-3 text-center">
-                        <input type="checkbox" onchange="togglePilihPasien('${p.rm}')" ${p.selected ? 'checked' : ''} class="w-4.5 h-4.5 text-teal-600 rounded cursor-pointer">
+            tbody.innerHTML = dbPasien.map((p, i) => `
+                <tr class="hover:bg-slate-50 border-b bg-white">
+                    <td class="p-2 text-center">
+                        <input type="checkbox" onchange="togglePilih(${i})" ${p.selected ? 'checked' : ''} class="w-4 h-4 text-teal-600 rounded cursor-pointer">
                     </td>
-                    <td class="py-2.5 px-3 font-mono text-teal-700 font-bold text-xs">${p.rm}</td>
-                    <td class="py-2.5 px-3">
-                        <div class="font-extrabold text-slate-900 leading-tight">${p.nama}</div>
-                        <div class="text-[9px] text-slate-400 font-bold mt-0.5">Lahir: ${formatTanggalIndo(p.tgl_lahir)} (${hitungUmurLokal(p.tgl_lahir)})</div>
+                    <td class="p-2">
+                        <div class="font-extrabold text-slate-900">${p.nama}</div>
+                        <div class="text-[10px] text-teal-700 font-mono font-bold">${p.rm}</div>
                     </td>
-                    <td class="py-2.5 px-3 font-semibold text-slate-800">${p.ruang}</td>
-                    <td class="py-2.5 px-3">
-                        <div class="font-bold text-slate-800">${p.bentuk}</div>
-                        <div class="text-[10px] text-slate-500 font-semibold">${p.diet}</div>
+                    <td class="p-2 font-semibold">${p.ruang}</td>
+                    <td class="p-2">
+                        <div class="font-bold">${p.bentuk}</div>
+                        <div class="text-[10px] text-slate-500">${p.diet}</div>
                     </td>
-                    <td class="py-2.5 px-3 text-center">
-                        <div class="flex justify-center gap-1.5">
-                            <button onclick="pilihPasienEdit('${p.rm}')" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg transition" title="Edit Profil"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                            <button onclick="prosesPulangPasien('${p.rm}')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg transition" title="Pasien Pulang (Hapus)"><i data-lucide="log-out" class="w-3.5 h-3.5"></i></button>
-                        </div>
+                    <td class="p-2 text-center">
+                        <button onclick="editPasien(${i})" class="p-1 bg-amber-50 text-amber-700 rounded border border-amber-200 mr-1"><i data-lucide="pencil" class="w-3 h-3"></i></button>
+                        <button onclick="hapusPasien(${i})" class="p-1 bg-rose-50 text-rose-700 rounded border border-rose-200"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
                     </td>
                 </tr>
             `).join('');
-
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-       // GANTI FUNGSI renderPrintPreview() LAMA ANDA DENGAN VERSI INI:
-function renderPrintPreview() {
-    const container = document.getElementById("area-cetak-massal-thermal");
-    const lblTotal = document.getElementById("lbl-total-cetak");
-    if (!container) return;
+        function renderPreview() {
+            const container = document.getElementById("area-cetak");
+            const terpilih = dbPasien.filter(p => p.selected);
+            document.getElementById("lbl-total").innerText = `${terpilih.length} Terpilih`;
 
-    const selectedPasien = dbPasien.filter(p => p && p.selected);
-    if (lblTotal) lblTotal.innerText = `${selectedPasien.length} Label Terpilih`;
-
-    if (selectedPasien.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-400 italic text-xs">Centang pasien di tabel sebelah kiri untuk menampilkan pratinjau cetak.</div>`;
-        return;
-    }
-
-    const tglTeks = formatTanggalIndo(new Date());
-
-    container.innerHTML = selectedPasien.map(p => {
-        // Tentukan visualisasi umur/tanggal lahir secara dinamis & kebal eror
-        const umurTeks = hitungUmurLokal(p.tgl_lahir);
-        const lahirTeks = formatTanggalIndo(p.tgl_lahir);
-        const displayLahirUmur = (umurTeks && umurTeks !== "-") ? `${lahirTeks} / ${umurTeks}` : lahirTeks;
-
-        return `
-            <div class="label-print-block bg-white text-slate-900 rounded-md border border-slate-350 shadow-sm flex flex-col justify-between" style="box-shadow: none;">
-                
-                <!-- KOP ATAS: LOGO KIRI, TEXT KANAN -->
-                <div class="flex items-center gap-2.5 border-b border-black/40 pb-1 mb-1 w-full">
-                    <img class="h-[34px] w-auto object-contain flex-shrink-0" src="https://lh3.googleusercontent.com/d/1FbBSQRC4hOwJer2Yp-ZnEBIFITeRBZRX" onerror="handleLogoError(this)" alt="Logo">
-                    <div class="min-w-0 flex-1 leading-none">
-                        <h4 class="font-extrabold text-[8.5px] uppercase tracking-wide text-slate-800">INSTALASI GIZI</h4>
-                        <h4 class="font-black text-[11.5px] uppercase tracking-wide text-slate-950 mt-1 truncate">RSUD SURYAH KHAIRUDDIN</h4>
-                    </div>
-                </div>
-                
-                <!-- DATA UTAMA PASIEN (LEBAR KOLOM KIRI DIKUNCI 26mm - ANTI TERPOTONG) -->
-                <div style="font-size: 10.5px; line-height: 1.25;" class="flex-1 flex flex-col justify-center space-y-0.5 font-semibold text-slate-950">
-                    <div class="flex items-start">
-                        <span style="width: 26mm; flex-shrink: 0;" class="font-bold text-slate-600">NAMA PASIEN</span>
-                        <span style="width: 2mm; flex-shrink: 0;">:</span>
-                        <span class="font-black truncate flex-1 text-[11px]">${p.nama}</span>
-                    </div>
-                    <div class="flex items-center">
-                        <span style="width: 26mm; flex-shrink: 0;" class="font-bold text-slate-600">NO. REKAM MEDIS</span>
-                        <span style="width: 2mm; flex-shrink: 0;">:</span>
-                        <span class="font-bold font-mono flex-1 text-[11px]">${p.rm}</span>
-                    </div>
-                    <div class="flex items-start">
-                        <span style="width: 26mm; flex-shrink: 0;" class="font-bold text-slate-600">RUANG RAWAT</span>
-                        <span style="width: 2mm; flex-shrink: 0;">:</span>
-                        <span class="font-bold flex-1 uppercase text-[10px] truncate">${p.ruang}</span>
-                    </div>
-                    <div class="flex items-center">
-                        <span style="width: 26mm; flex-shrink: 0;" class="font-bold text-slate-600">TGL LAHIR / UMUR</span>
-                        <span style="width: 2mm; flex-shrink: 0;">:</span>
-                        <span class="font-bold flex-1">${displayLahirUmur}</span>
-                    </div>
-                    <div class="flex items-center">
-                        <span style="width: 26mm; flex-shrink: 0;" class="font-bold text-slate-600">BENTUK MAKANAN</span>
-                        <span style="width: 2mm; flex-shrink: 0;">:</span>
-                        <span class="font-black text-teal-850 flex-1">${p.bentuk.toUpperCase()}</span>
-                    </div>
-                    <div class="flex items-start">
-                        <span style="width: 26mm; flex-shrink: 0;" class="font-bold text-slate-600">DIIT</span>
-                        <span style="width: 2mm; flex-shrink: 0;">:</span>
-                        <span class="font-black text-slate-900 flex-1 break-words line-clamp-1 leading-tight">${p.diet}</span>
-                    </div>
-                </div>
-                
-                <!-- FOOTER KERTAS: KUTIPAN KIRI, AHLI GIZI KANAN -->
-                <div class="border-t border-black/25 mt-1 pt-1 flex justify-between items-center text-[8px] font-bold">
-                    <span class="italic text-slate-800">"Selamat menikmati Semoga Lekas Sembuh"</span>
-                    <span class="font-black uppercase border border-black/35 px-1.5 py-0.5 rounded bg-slate-50" style="font-size: 7.5px;">Ahli Gizi: ${p.petugas}</span>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-        // ==================== SISA FUNGSIONAL UTILITY LAINNYA ====================
-        function togglePilihPasien(rm) {
-            const p = dbPasien.find(item => item.rm === rm);
-            if (p) {
-                p.selected = !p.selected;
-                saveToLocalStorage();
-                renderPrintPreview();
+            if (terpilih.length === 0) {
+                container.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs italic">Centang pasien di tabel untuk melihat pratinjau cetak.</div>`;
+                return;
             }
+
+            container.innerHTML = terpilih.map(p => `
+                <div class="label-print-block bg-white text-slate-900 border border-slate-300 rounded shadow-sm flex flex-col justify-between">
+                    <!-- KOP -->
+                    <div class="flex items-center gap-2 border-b border-black pb-1 mb-1">
+                        <div class="w-7 h-7 bg-teal-800 rounded flex items-center justify-center text-white font-black text-xs">GZ</div>
+                        <div class="leading-tight">
+                            <h4 class="font-extrabold text-[8px] uppercase text-slate-700">INSTALASI GIZI</h4>
+                            <h4 class="font-black text-[11px] uppercase text-slate-950">RSUD SURYAH KHAIRUDDIN</h4>
+                        </div>
+                    </div>
+                    
+                    <!-- ISI DATA (Nama PJ Gizi dihapus bersih) -->
+                    <div style="font-size: 10px; line-height: 1.25;" class="flex-1 flex flex-col justify-center space-y-0.5 font-semibold">
+                        <div class="flex"><span style="width: 25mm;" class="text-slate-600">NAMA</span><span>:</span><span class="font-black flex-1 truncate text-[11px] ml-1">${p.nama}</span></div>
+                        <div class="flex"><span style="width: 25mm;" class="text-slate-600">NO. RM</span><span>:</span><span class="font-bold font-mono flex-1 ml-1">${p.rm}</span></div>
+                        <div class="flex"><span style="width: 25mm;" class="text-slate-600">RUANG</span><span>:</span><span class="font-bold flex-1 truncate ml-1 uppercase">${p.ruang}</span></div>
+                        <div class="flex"><span style="width: 25mm;" class="text-slate-600">TGL/UMUR</span><span>:</span><span class="font-bold flex-1 ml-1">${p.tgl}</span></div>
+                        <div class="flex"><span style="width: 25mm;" class="text-slate-600">BENTUK</span><span>:</span><span class="font-black text-teal-900 flex-1 ml-1">${p.bentuk.toUpperCase()}</span></div>
+                        <div class="flex"><span style="width: 25mm;" class="text-slate-600">DIIT</span><span>:</span><span class="font-black text-slate-950 flex-1 ml-1 truncate">${p.diet}</span></div>
+                    </div>
+                    
+                    <!-- FOOTER -->
+                    <div class="border-t border-black/30 pt-1 text-center text-[8px] font-bold italic text-slate-700">
+                        "Selamat menikmati & semoga lekas sembuh"
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function pilihSemuaPasien(checked) {
-            dbPasien.forEach(p => p.selected = checked);
-            saveToLocalStorage();
-            renderManifesTable();
-            renderPrintPreview();
+        function togglePilih(i) {
+            dbPasien[i].selected = !dbPasien[i].selected;
+            simpanDanPerbarui();
         }
 
-        function pilihPasienEdit(rm) {
-            const p = dbPasien.find(item => item.rm === rm);
-            if (!p) return;
+        function pilihSemua(status) {
+            dbPasien.forEach(p => p.selected = status);
+            simpanDanPerbarui();
+        }
 
-            document.getElementById("edit-mode").value = "true";
-            document.getElementById("edit-old-rm").value = p.rm;
-            document.getElementById("form-title").innerText = "Edit Informasi Pasien Aktif";
-
+        function editPasien(i) {
+            const p = dbPasien[i];
+            document.getElementById("edit-index").value = i;
             document.getElementById("inp-rm").value = p.rm;
             document.getElementById("inp-nama").value = p.nama;
             document.getElementById("inp-ruang").value = p.ruang;
-            document.getElementById("inp-tgl-lahir").value = formatToInputDate(p.tgl_lahir);
+            document.getElementById("inp-tgl").value = p.tgl;
             document.getElementById("inp-bentuk").value = p.bentuk;
             document.getElementById("inp-diet").value = p.diet;
-            document.getElementById("inp-petugas").value = p.petugas;
-
-            document.getElementById("btn-submit-pasien").querySelector("span").innerText = "Simpan Perubahan";
-            showToast(`Data ${p.nama} dimuat ke form!`, "info");
+            document.getElementById("form-title").innerText = "Edit Data Pasien";
+            document.getElementById("btn-submit").innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Perbarui Pasien`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function prosesPulangPasien(rm) {
-            const p = dbPasien.find(item => item.rm === rm);
-            if (!p) return;
-
-            dbPasien = dbPasien.filter(item => item.rm !== rm);
-            saveToLocalStorage();
-            renderManifesTable();
-            renderPrintPreview();
-            showToast(`Pasien ${p.nama} telah dipulangkan.`, "info");
-        }
-
-        function cetakMassalSekaligus() {
-            const selectedCount = dbPasien.filter(p => p.selected).length;
-            if (selectedCount === 0) {
-                showToast("Pilih minimal satu pasien di tabel untuk dicetak!", "error");
-                return;
+        function hapusPasien(i) {
+            if (confirm("Hapus pasien ini dari manifes?")) {
+                dbPasien.splice(i, 1);
+                simpanDanPerbarui();
+                showToast("Pasien dihapus.");
             }
-            setTimeout(() => {
-                window.print();
-            }, 200);
         }
 
-        function bersihkanForm() {
+        function resetForm() {
             document.getElementById("form-pasien").reset();
-            document.getElementById("edit-mode").value = "false";
-            document.getElementById("edit-old-rm").value = "";
+            document.getElementById("edit-index").value = "-1";
             document.getElementById("form-title").innerText = "Tambah Pasien Baru";
-            document.getElementById("btn-submit-pasien").querySelector("span").innerText = "Simpan Pasien";
-            
-            const lastPetugas = localStorage.getItem("last_petugas");
-            if (lastPetugas) {
-                document.getElementById("inp-petugas").value = lastPetugas;
-            }
+            document.getElementById("btn-submit").innerHTML = `<i data-lucide="check" class="w-4 h-4"><span> Simpan Pasien`;
         }
 
-        function getLocalDateString() {
-            const now = new Date();
-            const y = now.getFullYear();
-            const m = String(now.getMonth() + 1).padStart(2, '0');
-            const d = String(now.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
+        function eksporData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dbPasien));
+            const a = document.createElement('a');
+            a.href = dataStr;
+            a.download = "backup_plisir_gizi.json";
+            a.click();
         }
 
-        function formatToInputDate(dateStr) {
-            if (!dateStr || dateStr === "-") return "";
-            const clean = dateStr.toString().split('T')[0].split(' ')[0].trim();
-            const parts = clean.split('-');
-            if (parts.length === 3) {
-                if (parts[0].length === 4) return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
-                if (parts[2].length === 4) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-            }
-            return dateStr;
-        }
-
-        function handleLogoError(img) {
-            img.onerror = null;
-            img.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='50' height='50'><circle cx='50' cy='50' r='45' fill='%230f766e'/><rect x='43' y='20' width='14' height='60' fill='white' rx='3'/><rect x='20' y='43' width='60' height='14' fill='white' rx='3'/></svg>";
+        function imporData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    dbPasien = JSON.parse(evt.target.result);
+                    simpanDanPerbarui();
+                    showToast("Data berhasil diimpor!");
+                } catch (err) {
+                    showToast("Format file salah!");
+                }
+            };
+            reader.readAsText(file);
         }
     </script>
 </body>
