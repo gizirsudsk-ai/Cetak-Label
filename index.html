@@ -258,7 +258,7 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        /* FUNGSI UTAMA: MENGUBAH DATA TEKS MENJADI GAMBAR PRESISI 80x50 MM */
+        /* FUNGSI UTAMA: MENGUBAH DATA TEKS MENJADI GAMBAR PRESISI 80x50 MM DENGAN LOGO & TITIK DUA RATA */
         function renderPreviewCanvas() {
             const container = document.getElementById("area-cetak-canvas");
             const terpilih = dbPasien.filter(p => p.selected);
@@ -271,9 +271,22 @@
 
             container.innerHTML = "";
 
+            // Muat Logo Terlebih Dahulu (Ganti URL logo jika diperlukan)
+            const logoImg = new Image();
+            logoImg.crossOrigin = "anonymous";
+            logoImg.src = "https://lh3.googleusercontent.com/d/1FbBSQRC4hOwJer2Yp-ZnEBIFITeRBZRX";
+
+            logoImg.onload = function() {
+                buatSemuaCanvas(terpilih, container, logoImg);
+            };
+            logoImg.onerror = function() {
+                buatSemuaCanvas(terpilih, container, null); // Tetap cetak walau logo gagal
+            };
+        }
+
+        function buatSemuaCanvas(terpilih, container, logoImg) {
             terpilih.forEach((p) => {
                 const canvas = document.createElement("canvas");
-                // Resolusi tinggi standar thermal (80mm x 50mm pada 203 DPI = 640 x 400 px)
                 canvas.width = 640;
                 canvas.height = 400;
                 const ctx = canvas.getContext("2d");
@@ -282,13 +295,19 @@
                 ctx.fillStyle = "#FFFFFF";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Garis KOP Atas
+                // KOP ATAS (Logo & Instansi)
+                let textStartX = 24;
+                if (logoImg) {
+                    ctx.drawImage(logoImg, 24, 18, 45, 45); // Posisi logo
+                    textStartX = 80; // Geser teks KOP ke kanan agar tidak menabrak logo
+                }
+
                 ctx.fillStyle = "#000000";
                 ctx.font = "bold 16px Inter, sans-serif";
-                ctx.fillText("INSTALASI GIZI", 24, 34);
+                ctx.fillText("INSTALASI GIZI", textStartX, 34);
                 
                 ctx.font = "900 22px Nunito, sans-serif";
-                ctx.fillText("RSUD SURYAH KHAIRUDDIN", 24, 60);
+                ctx.fillText("RSUD SURYAH KHAIRUDDIN", textStartX, 60);
 
                 // Garis Pembatas KOP
                 ctx.lineWidth = 3;
@@ -297,20 +316,21 @@
                 ctx.lineTo(616, 75);
                 ctx.stroke();
 
-                // Data Teks Utama Pasien
+                // Data Teks Utama Pasien (Titik Dua DIKUNCI DI POSISI X=230 agar lurus sempurna)
                 const startY = 110;
                 const gapY = 38;
 
                 const drawRow = (label, val, y, isBold = false) => {
                     ctx.font = "bold 18px Inter, sans-serif";
                     ctx.fillStyle = "#334155";
-                    ctx.fillText(label, 24, y);
-                    ctx.fillText(":", 185, y);
+                    ctx.fillText(label, 24, y); // Label Kiri
+
+                    ctx.fillStyle = "#000000";
+                    ctx.fillText(":", 225, y); // TITIK DUA DIKUNCI DI SATU GARIS LURUS
 
                     ctx.font = isBold ? "900 20px Inter, sans-serif" : "bold 18px Inter, sans-serif";
                     ctx.fillStyle = "#020617";
-                    // Batasi panjang teks agar tidak keluar kanvas
-                    ctx.fillText(val.substring(0, 38), 210, y);
+                    ctx.fillText(val.substring(0, 36), 245, y); // Nilai di sebelah kanan titik dua
                 };
 
                 drawRow("NAMA PASIEN", p.nama, startY, true);
@@ -332,11 +352,10 @@
                 ctx.fillStyle = "#1e293b";
                 ctx.fillText('"Selamat menikmati & semoga lekas sembuh"', 24, 375);
 
-                // Ubah canvas menjadi elemen gambar HTML yang siap cetak presisi mutlak
+                // Render ke elemen Gambar HTML
                 const img = document.createElement("img");
                 img.src = canvas.toDataURL("image/png");
                 img.className = "canvas-label-item w-full h-auto rounded border border-slate-300 shadow-sm";
-                
                 container.appendChild(img);
             });
         }
