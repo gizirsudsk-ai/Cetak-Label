@@ -80,7 +80,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div class="md:col-span-2">
-                            <label class="block text-slate-500 mb-1">Ruang Rawat / Bangsal *</label>
+                            <label class="block text-slate-500 mb-1">Ruang Rawat / Bangsal / Kelas *</label>
                             <input type="text" id="inp-ruang" required class="w-full px-3 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-teal-500" placeholder="Penyakit Dalam / VIP">
                         </div>
                         <div>
@@ -335,7 +335,7 @@
 
                 drawRow("NAMA PASIEN", p.nama, startY, true);
                 drawRow("NO. REKAM MEDIS", p.rm, startY + gapY);
-                drawRow("RUANG RAWAT", p.ruang, startY + (gapY * 2));
+                drawRow("RUANG RAWAT/KELAS", p.ruang, startY + (gapY * 2));
                 drawRow("TGL LAHIR / UMUR", p.tgl, startY + (gapY * 3));
                 drawRow("BENTUK MAKANAN", p.bentuk.toUpperCase(), startY + (gapY * 4), true);
                 drawRow("DIIT", p.diet, startY + (gapY * 5), true);
